@@ -176,11 +176,6 @@
       color: var(--ink);
     }
     .section-title { margin: 0 0 12px; font-size: 18px; font-weight: 700; }
-    .agenda { margin: 0 0 18px; background: var(--panel); border: 1px solid var(--line-soft); overflow: hidden; }
-    .agenda table { width: 100%; border-collapse: collapse; }
-    .agenda th, .agenda td { padding: 10px 12px; border-top: 1px solid var(--line-soft); vertical-align: top; text-align: left; }
-    .agenda thead th { border-top: 0; background: var(--soft2); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
-    .agenda .time { width: 150px; white-space: nowrap; font-weight: 700; }
     .groups { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
     .group-card { min-width: 0; background: var(--panel); border: 1px solid var(--line); border-top-width: 8px; border-top-color: var(--accent, #111); border-radius: 0; overflow: hidden; position: relative; }
     .group-head { padding: 12px 16px 10px; border-bottom: 1px solid var(--line-soft); background: var(--soft2); }
@@ -226,23 +221,6 @@
     <h1>2026 UI/UX Midterm Presentations</h1>
     <div class="layout">
       <main class="content">
-        <div class="section-title">Schedule</div>
-        <section class="agenda" aria-label="Midterm presentation schedule">
-          <table>
-            <thead>
-              <tr><th>Time</th><th>Agenda</th></tr>
-            </thead>
-            <tbody>
-              <tr><td class="time">10:40–10:50</td><td>説明・グループ移動</td></tr>
-              <tr><td class="time">10:50–11:20</td><td>グループ発表（3分発表＋1分フィードバック）</td></tr>
-              <tr><td class="time">11:20–11:23</td><td>グループ内投票</td></tr>
-              <tr><td class="time">11:23–11:27</td><td>代表者集合・準備</td></tr>
-              <tr><td class="time">11:27–12:12</td><td>全体発表（各グループ代表15名・3分）</td></tr>
-              <tr><td class="time">12:12–12:17</td><td>全体投票</td></tr>
-              <tr><td class="time">12:17–12:20</td><td>結果発表・講評</td></tr>
-            </tbody>
-          </table>
-        </section>
         <div class="section-title">Groups</div>
         <section class="groups">
       <section class="group-card" style="--accent:#0b7a3b">
