@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2026 UI/UX Midterm Presentations</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f2f2f2;
+      --panel: #ffffff;
+      --ink: #111111;
+      --muted: #666666;
+      --line: #111111;
+      --line-soft: #b9b9b9;
+      --soft2: #f5f5f5;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
+    .page { max-width: 1500px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 14px; font-size: 30px; line-height: 1.1; font-weight: 700; }
+    .layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr); gap: 18px; align-items: start; }
+    .sidebar { position: sticky; top: 20px; align-self: start; }
+    .sidebar-card { position: sticky; top: 20px; }
+    .arena-title { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 10px; font-size: 12px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+    .arena-title::before, .arena-title::after { content: ""; width: 18px; height: 1px; background: var(--line-soft); }
+    .arena-shell { position: relative; aspect-ratio: 1 / 1; border: 1px solid var(--line); background: #fafafa; overflow: hidden; }
+    .arena-fullscreen {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 3;
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.92);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      color: var(--ink);
+    }
+    .arena-fullscreen:hover { background: #fff; }
+    .arena-fullscreen svg { width: 16px; height: 16px; display: block; }
+    .arena-label { position: absolute; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; background: rgba(255,255,255,0.92); padding: 2px 8px; border: 1px solid var(--line-soft); }
+    .arena-screen { top: 34px; }
+    .arena-entrance { bottom: 34px; }
+    .arena-arrow { position: absolute; left: 50%; width: 0; height: 0; transform: translateX(-50%); border-left: 10px solid transparent; border-right: 10px solid transparent; opacity: 0.35; }
+    .arena-arrow.north { top: 22px; border-bottom: 14px solid var(--line); }
+    .arena-arrow.south { bottom: 22px; border-top: 14px solid var(--line); }
+    .arena-grid { position: absolute; inset: 14px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .arena-stage { grid-column: 2 / span 2; grid-row: 1; border: 1px solid var(--line-soft); background: #f3f3f3; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .arena-stage .stage-line { width: 28px; height: 1px; background: var(--line-soft); }
+    .arena-marker { justify-self: stretch; align-self: stretch; position: relative; display: flex; align-items: center; gap: 8px; width: 100%; min-height: 72px; padding: 12px 10px 10px; border: 1px solid var(--line); border-top-width: 8px; border-top-color: var(--accent, #111); background: rgba(255,255,255,0.96); overflow: visible; }
+    .arena-marker .letter { display: inline-flex; width: 22px; height: 22px; align-items: center; justify-content: center; border: 1px solid var(--line); font-weight: 700; font-size: 12px; background: #fff; }
+    .arena-marker .country { display: block; font-size: 12px; font-weight: 700; line-height: 1.1; }
+    .arena-marker .note { display: block; font-size: 11px; color: var(--muted); line-height: 1.1; }
+    .arena-tooltip {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 8px);
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: 220px;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.14s ease, visibility 0.14s ease;
+      z-index: 4;
+    }
+    .arena-marker:hover .arena-tooltip,
+    .arena-marker:focus-within .arena-tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+    .arena-shell:fullscreen {
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: auto;
+      border: 0;
+      background: #f2f2f2;
+      overflow: hidden;
+    }
+    .arena-shell:fullscreen .arena-fullscreen {
+      top: 14px;
+      right: 14px;
+    }
+    .arena-shell:fullscreen .arena-grid {
+      inset: 18px;
+      gap: 8px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-rows: repeat(5, minmax(0, 1fr));
+      place-items: center;
+      align-content: start;
+      height: calc(100vh - 36px);
+    }
+    .arena-shell:fullscreen .arena-marker {
+      justify-self: center;
+      align-self: center;
+      width: 100%;
+      max-width: 240px;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-rows: auto auto;
+      column-gap: 8px;
+      row-gap: 0;
+      padding: 8px 0 0;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-top-width: 8px;
+      border-top-color: var(--accent, #111);
+      overflow: hidden;
+    }
+    .arena-shell:fullscreen .arena-marker .letter {
+      grid-column: 1;
+      grid-row: 1;
+      width: 20px;
+      height: 20px;
+      margin-left: 8px;
+      font-size: 11px;
+    }
+    .arena-shell:fullscreen .arena-marker > span:nth-of-type(2) {
+      grid-column: 2;
+      grid-row: 1;
+      padding-top: 1px;
+      padding-right: 8px;
+    }
+    .arena-shell:fullscreen .arena-marker .country {
+      font-size: 11px;
+    }
+    .arena-shell:fullscreen .arena-marker .note {
+      display: none;
+    }
+    .arena-shell:fullscreen .arena-tooltip {
+      position: static;
+      grid-column: 1 / -1;
+      grid-row: 2;
+      left: auto;
+      top: auto;
+      transform: none;
+      width: 100%;
+      max-width: none;
+      max-height: none;
+      overflow: visible;
+      margin-top: 8px;
+      padding: 0;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      box-shadow: none;
+    }
+    .arena-shell:fullscreen .arena-tooltip ul {
+      display: block;
+      font-size: 10px;
+      line-height: 1.08;
+      max-height: none;
+      overflow: visible;
+    }
+    .arena-tooltip ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .arena-tooltip li { margin: 0; }
+    .arena-shell:fullscreen .arena-tooltip li {
+      padding: 2px 8px 2px 10px;
+      border-top: 1px solid var(--line-soft);
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .section-title { margin: 0 0 12px; font-size: 18px; font-weight: 700; }
+    .groups { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .group-card { min-width: 0; background: var(--panel); border: 1px solid var(--line); border-top-width: 8px; border-top-color: var(--accent, #111); border-radius: 0; overflow: hidden; position: relative; }
+    .group-head { padding: 12px 16px 10px; border-bottom: 1px solid var(--line-soft); background: var(--soft2); }
+    .group-topline { display: flex; align-items: flex-end; gap: 10px; line-height: 1; margin-bottom: 6px; }
+    .group-letter { font-size: 28px; font-weight: 800; letter-spacing: 0.02em; line-height: 0.9; }
+    .country-wrap { display: flex; align-items: flex-end; min-height: 28px; }
+    .country-name { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; padding-bottom: 1px; }
+    .group-head h2 { margin: 0; font-size: 18px; line-height: 1.2; }
+    .group-list { list-style: none; margin: 0; padding: 0; }
+    .group-list li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 1fr); gap: 12px; padding: 10px 16px; border-top: 1px solid var(--line-soft); }
+    .group-list li:first-child { border-top: 0; }
+    .group-list li:nth-child(even) { background: #fcfcfc; }
+    .student { display: block; font-weight: 700; line-height: 1.2; }
+    .kana { display: block; margin-top: 2px; font-size: 11px; color: var(--muted); line-height: 1.1; }
+    .kana.small { font-size: 10px; }
+    .project { color: var(--muted); }
+    .student-table-wrap { margin-top: 22px; }
+    .student-table-wrap .split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .student-table-panel { background: var(--panel); border: 1px solid var(--line-soft); overflow: hidden; }
+    .student-table-panel table { width: 100%; border-collapse: collapse; min-width: 0; }
+    .student-table-panel th, .student-table-panel td { border-top: 1px solid var(--line-soft); border-right: 1px solid var(--line-soft); padding: 8px 10px; vertical-align: top; text-align: left; }
+    .student-table-panel th:last-child, .student-table-panel td:last-child { border-right: 0; }
+    .student-table-panel thead th { background: var(--soft2); border-top: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .name-cell { min-width: 240px; }
+    .group-pill { display: inline-flex; align-items: center; gap: 8px; font-size: 25px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink); }
+    .group-pill::before { content: ""; width: 18px; height: 10px; background: var(--accent, #111); display: inline-block; flex: 0 0 auto; }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .sidebar-card { position: static; }
+      .arena-shell { max-width: 700px; margin: 0 auto; }
+      .groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .student-table-wrap .split { grid-template-columns: 1fr; gap: 18px; }
+    }
+    @media (max-width: 720px) {
+      .groups { grid-template-columns: 1fr; }
+      .group-list li { grid-template-columns: 1fr; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>2026 UI/UX Midterm Presentations</h1>
+    <div class="layout">
+      <main class="content">
+        <div class="section-title">Groups</div>
+        <section class="groups">
+      <section class="group-card" style="--accent:#0b7a3b">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">A</div>
+            <div class="country-wrap"><div class="country-name">Brazil</div></div>
+          </div>
+          <h2>Scheduling and deadlines</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">森本　颯太</span><span class="kana">モリモト　ソウタ</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">若槻　颯太</span><span class="kana">ワカツキ　ソウタ</span></span><span class="project">TaskFlow(仮)</span></li><li><span class="person"><span class="student">増田　優希</span><span class="kana">マスダ　ユウキ</span></span><span class="project">Easy Addition Calendar</span></li><li><span class="person"><span class="student">須原　大貴</span><span class="kana">スハラ　タイキ</span></span><span class="project">課題の優先度が分かるアプリ</span></li><li><span class="person"><span class="student">三浦　礼央</span><span class="kana">ミウラ　レオ</span></span><span class="project">未提出課題管理アプリ</span></li><li><span class="person"><span class="student">韓　知勲</span><span class="kana">ハン　ジフン</span></span><span class="project">トピック不明</span></li><li><span class="person"><span class="student">野村　隆介</span><span class="kana">ノムラ　リュウスケ</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#1b4fa3">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">B</div>
+            <div class="country-wrap"><div class="country-name">France</div></div>
+          </div>
+          <h2>Money and finance</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">鈴木　陽太</span><span class="kana">スズキ　ヨウタ</span></span><span class="project">出費管理アプリ</span></li><li><span class="person"><span class="student">小川　史温</span><span class="kana">オガワ　シオン</span></span><span class="project">お金の管理・集計アプリ</span></li><li><span class="person"><span class="student">松戸　輝</span><span class="kana">マツド　ヒカル</span></span><span class="project">家計簿アプリ</span></li><li><span class="person"><span class="student">木村　治仁</span><span class="kana">キムラ　ハルト</span></span><span class="project">サブスク管理アプリ</span></li><li><span class="person"><span class="student">鈴木　航成</span><span class="kana">スズキ　コウセイ</span></span><span class="project">キャッシュレス決済管理アプリ</span></li><li><span class="person"><span class="student">白井　智也</span><span class="kana">シライ　トモヤ</span></span><span class="project">トピック不明</span></li><li><span class="person"><span class="student">岡﨑　大智</span><span class="kana">オカザキ　ダイチ</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#bc002d">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">C</div>
+            <div class="country-wrap"><div class="country-name">Japan</div></div>
+          </div>
+          <h2>Files and notes</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">坂本　快</span><span class="kana">サカモト　カイ</span></span><span class="project">学生向けファイルマネージャー</span></li><li><span class="person"><span class="student">太田　和毅</span><span class="kana">オオタ　カズキ</span></span><span class="project">メモアプリ</span></li><li><span class="person"><span class="student">柴田　尚槻</span><span class="kana">シバタ　ナオキ</span></span><span class="project">ファイル整理アプリ</span></li><li><span class="person"><span class="student">石引　響</span><span class="kana">イシビキ　ヒビキ</span></span><span class="project">メモアプリ</span></li><li><span class="person"><span class="student">草野　陽太</span><span class="kana">クサノ　ヒナタ</span></span><span class="project">整理整頓bot app</span></li><li><span class="person"><span class="student">大塚　一樹</span><span class="kana">オオツカ　カズキ</span></span><span class="project">トピック不明</span></li><li><span class="person"><span class="student">高橋　拓真</span><span class="kana">タカハシ　タクマ</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#111111">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">D</div>
+            <div class="country-wrap"><div class="country-name">Germany</div></div>
+          </div>
+          <h2>Health and habits</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">荒木田　弘明</span><span class="kana">アラキダ　ヒロアキ</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">伊藤　拓哉</span><span class="kana">イトウ　タクヤ</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">宮武　蒼惟</span><span class="kana">ミヤタケ　アオイ</span></span><span class="project">学習習慣化アプリ</span></li><li><span class="person"><span class="student">塩谷　翼</span><span class="kana">シオヤ　ツバサ</span></span><span class="project">健康管理アプリ</span></li><li><span class="person"><span class="student">伊藤　海生</span><span class="kana">イトウ　カイイ</span></span><span class="project">体調予測アプリ</span></li><li><span class="person"><span class="student">茂木　優和</span><span class="kana">モギ　ユウワ</span></span><span class="project">トピック不明</span></li><li><span class="person"><span class="student">檜山　陸斗</span><span class="kana">ヒヤマ　リツ</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#aa151b">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">E</div>
+            <div class="country-wrap"><div class="country-name">Spain</div></div>
+          </div>
+          <h2>Food and dining</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">松﨑　唯華</span><span class="kana">マツザキ　ユイカ</span></span><span class="project">食文化ウェブサイト</span></li><li><span class="person"><span class="student">山崎　来斗</span><span class="kana">ヤマサキ　ライト</span></span><span class="project">くら寿司スタッフ専用アプリ</span></li><li><span class="person"><span class="student">吉田　爽二</span><span class="kana">ヨシダ　ソウジ</span></span><span class="project">特売スマートナビ</span></li><li><span class="person"><span class="student">山口　颯太</span><span class="kana">ヤマグチ　ソウタ</span></span><span class="project">ご飯決めるアプリ</span></li><li><span class="person"><span class="student">山﨑　大肇</span><span class="kana">ヤマザキ　マサトシ</span></span><span class="project">ハラペコナビ</span></li><li><span class="person"><span class="student">桑原　遼羽</span><span class="kana">クワハラ　リョーウ</span></span><span class="project">学食アプリ</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#006847">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">F</div>
+            <div class="country-wrap"><div class="country-name">Mexico</div></div>
+          </div>
+          <h2>Garbage and home care</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">仲町　友里</span><span class="kana">ナカマチ　ユリ</span></span><span class="project">選択ナビ</span></li><li><span class="person"><span class="student">一松　陽翔</span><span class="kana">イチマツ　アキト</span></span><span class="project">スマートホーム総合管理システム</span></li><li><span class="person"><span class="student">幕内　龍海</span><span class="kana">マクウチ　タツミ</span></span><span class="project">多言語対応のごみ判別アプリ</span></li><li><span class="person"><span class="student">横倉　蒼空</span><span class="kana">ヨコクラ　ソラ</span></span><span class="project">写真でわかるゴミ分別アプリ</span></li><li><span class="person"><span class="student">桃井　優</span><span class="kana">モモイ　ユウ</span></span><span class="project">ごみ排出支援アプリ</span></li><li><span class="person"><span class="student">浅田　寛弥</span><span class="kana">アサダ　ヒロヤ</span></span><span class="project">トピック不明</span></li><li><span class="person"><span class="student">國井　徠希</span><span class="kana">クニイ　ライキ</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#c1272d">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">G</div>
+            <div class="country-wrap"><div class="country-name">Morocco</div></div>
+          </div>
+          <h2>Navigation and transport</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">小山　祐輝</span><span class="kana">コヤマ　ユウキ</span></span><span class="project">観光時期マップ</span></li><li><span class="person"><span class="student">根本　隼</span><span class="kana">ネモト　シュン</span></span><span class="project">図書館マップ</span></li><li><span class="person"><span class="student">佐藤　陸</span><span class="kana">サトウ　リク</span></span><span class="project">休憩場所探しサイト</span></li><li><span class="person"><span class="student">佐藤　凌</span><span class="kana">サトウ　リョウ</span></span><span class="project">バス時刻案内</span></li><li><span class="person"><span class="student">青木　愛</span><span class="kana">アオキ　アイ</span></span><span class="project">迷子用</span></li><li><span class="person"><span class="student">水谷　優希</span><span class="kana">ミズタニ　ユウキ</span></span><span class="project">トピック不明</span></li><li><span class="person"><span class="student">木内　明輝</span><span class="kana">キウチ　メイキ</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#0a3161">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">H</div>
+            <div class="country-wrap"><div class="country-name">USA</div></div>
+          </div>
+          <h2>Learning and skills</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">鈴木　優</span><span class="kana">スズキ　ユウ</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">須藤　蒼太</span><span class="kana">ストウ　ソウタ</span></span><span class="project">ポケモンバトルサポート</span></li><li><span class="person"><span class="student">石橋　和也</span><span class="kana">イシバシ　カズヤ</span></span><span class="project">なる時事～Ver.0.1</span></li><li><span class="person"><span class="student">太田　晃生</span><span class="kana">オオタ　コウキ</span></span><span class="project">LとRの発音聞き比べクイズ</span></li><li><span class="person"><span class="student">八重樫　旺樹</span><span class="kana">ヤエガシ　ヒロキ</span></span><span class="project">タイピングのプロトタイピング</span></li><li><span class="person"><span class="student">阿部　至恩</span><span class="kana">アベ　シオン</span></span><span class="project">トピック不明</span></li><li><span class="person"><span class="student">田柳　光将</span><span class="kana">タヤナギ　ミショウ</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#74acdf">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">I</div>
+            <div class="country-wrap"><div class="country-name">Argentina</div></div>
+          </div>
+          <h2>Community and conversation</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">藤倉　いずみ</span><span class="kana">フジクラ　イズミ</span></span><span class="project">Chere</span></li><li><span class="person"><span class="student">平野　大翔</span><span class="kana">ヒラノ　ヤマト</span></span><span class="project">心理共感掲示板</span></li><li><span class="person"><span class="student">松村　輝</span><span class="kana">マツムラ　ヒカル</span></span><span class="project">Intertalk</span></li><li><span class="person"><span class="student">神戸　宗一郎</span><span class="kana">カンベ　ソウイチロウ</span></span><span class="project">MAD CITY RAPER&#x27;s INFORMATION</span></li><li><span class="person"><span class="student">新城　裕涼</span><span class="kana">シンジョウ　ユウスケ</span></span><span class="project">猫カフェ紹介サイト</span></li><li><span class="person"><span class="student">髙橋　琉之介</span><span class="kana">タカハシ　リュウノスケ</span></span><span class="project">トピック不明</span></li><li><span class="person"><span class="student">駒倉　康碩</span><span class="kana">コマクラ　ヤスヒロ</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#006600">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">J</div>
+            <div class="country-wrap"><div class="country-name">Portugal</div></div>
+          </div>
+          <h2>Safety and scams</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">渡邉　奏士</span><span class="kana">ワタナベ　カナト</span></span><span class="project">歩きスマホ事故防止アプリ</span></li><li><span class="person"><span class="student">我如古　隼人</span><span class="kana">ガネコ　ハヤト</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">青山　爽太</span><span class="kana">アオヤマ　ソウタ</span></span><span class="project">詐欺電話見破りアプリ</span></li><li><span class="person"><span class="student">浅野　開琉</span><span class="kana">アサノ　カイル</span></span><span class="project">迷惑メールチェッカー</span></li><li><span class="person"><span class="student">小平　侍友太</span><span class="kana">コダイラ　シュウタ</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">佐藤　空</span><span class="kana">サトウ　ソラ</span></span><span class="project">トピック不明</span></li><li><span class="person"><span class="student">堀井　隼人</span><span class="kana">ホリイ　ハヤト</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#f7d117">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">K</div>
+            <div class="country-wrap"><div class="country-name">Colombia</div></div>
+          </div>
+          <h2>Discovery and recommendation</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">川田原　瑠那</span><span class="kana">カワタハラ　ルナ</span></span><span class="project">CatTok</span></li><li><span class="person"><span class="student">山本　剛大</span><span class="kana">ヤマモト　タカヒロ</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">ジャヤシンハアーラチラゲクラトンガ　ビナーディペハンサ</span><span class="kana">ジャヤシンハアーラチラゲクラトンガ ビナーディペハンサ</span></span><span class="project">コーデ提案アプリ</span></li><li><span class="person"><span class="student">藤永　優多</span><span class="kana">フジナガ　ウタ</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">ＭＯＮＴＥＬＬＡ　ＥＤＷＩＮ</span><span class="kana">モンテッラ　エドウィン</span></span><span class="project">ポイントカードまとめアプリ(PocketCards)</span></li><li><span class="person"><span class="student">宇田　一博</span><span class="kana">ウダ　カズヒロ</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#00a3e0">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">L</div>
+            <div class="country-wrap"><div class="country-name">Uruguay</div></div>
+          </div>
+          <h2>Campus life</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">竹田　圭冴</span><span class="kana">タケタ　ケイゴ</span></span><span class="project">大学生の普通を知ろう</span></li><li><span class="person"><span class="student">大平　蓮也</span><span class="kana">オオヒラ　レンヤ</span></span><span class="project">アンケートまとめサイト</span></li><li><span class="person"><span class="student">鈴木　咲澄</span><span class="kana">スズキ　サクト</span></span><span class="project">予定管理アプリのプロトタイプ</span></li><li><span class="person"><span class="student">桑久保　陽平</span><span class="kana">クワクボ　ヨウヘイ</span></span><span class="project">スケジュール管理アプリ</span></li><li><span class="person"><span class="student">米山　拓実</span><span class="kana">ヨネヤマ　タクミ</span></span><span class="project">スケジュール管理</span></li><li><span class="person"><span class="student">宮本　琉生</span><span class="kana">ミヤモト　ルイ</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#003478">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">M</div>
+            <div class="country-wrap"><div class="country-name">South Korea</div></div>
+          </div>
+          <h2>Task management</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">島田　晟</span><span class="kana">シマダ　ジョウ</span></span><span class="project">スケジュール管理アプリ</span></li><li><span class="person"><span class="student">鬼塚　駿</span><span class="kana">オニツカ　シュン</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">江口　歩真</span><span class="kana">エグチ　アユマ</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">伊達　友哉</span><span class="kana">ダテ　ユウヤ</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">有賀　勇斗</span><span class="kana">アリガ　ユウト</span></span><span class="project">To do 課題マネージャー</span></li><li><span class="person"><span class="student">登倉　慧</span><span class="kana">トグラ　ケイ</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#006c35">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">N</div>
+            <div class="country-wrap"><div class="country-name">Saudi Arabia</div></div>
+          </div>
+          <h2>Creative and media</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">永田　真帆</span><span class="kana">ナガタ　マホ</span></span><span class="project">編み物販売サイト</span></li><li><span class="person"><span class="student">グエン　トアンキエト</span><span class="kana">グエン　トアンキエト</span></span><span class="project">睡眠習慣アプリ</span></li><li><span class="person"><span class="student">大澤　祥太郎</span><span class="kana">オオサワ　ショウタロウ</span></span><span class="project">音楽アプリ</span></li><li><span class="person"><span class="student">柿木　奏太</span><span class="kana">カキノキ　ソウタ</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">粟野　翔</span><span class="kana">アワノ　カケル</span></span><span class="project">月観測アプリ</span></li><li><span class="person"><span class="student">栗田　唯世</span><span class="kana">クリタ　ユイセ</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    
+      <section class="group-card" style="--accent:#ce1126">
+        <div class="group-head">
+          <div class="group-topline">
+            <div class="group-letter">O</div>
+            <div class="country-wrap"><div class="country-name">Egypt</div></div>
+          </div>
+          <h2>Practical utilities</h2>
+        </div>
+        <ul class="group-list"><li><span class="person"><span class="student">椎名　陽悠</span><span class="kana">シイナ　ヒユウ</span></span><span class="project">忘れ物ZOROアプリ！</span></li><li><span class="person"><span class="student">秋山　樹</span><span class="kana">アキヤマ　タツキ</span></span><span class="project">No data</span></li><li><span class="person"><span class="student">岸波　壮智</span><span class="kana">キシナミ　マサアキ</span></span><span class="project">リサイクル検索アプリ</span></li><li><span class="person"><span class="student">春田　翔</span><span class="kana">ハルタ　ショウ</span></span><span class="project">カレンダー課題管理</span></li><li><span class="person"><span class="student">矢口　瑛士</span><span class="kana">ヤグチ　エイジ</span></span><span class="project">Photo Link ～写真と思い出をつなげて残すカメラアプリ～</span></li><li><span class="person"><span class="student">藤枝　駿斗</span><span class="kana">フジエダ　シュント</span></span><span class="project">トピック不明</span></li></ul>
+      </section>
+    </section>
+        <div class="section-title">Student List</div>
+        <section class="student-table-wrap">
+          <div class="split">
+            <div class="student-table-panel">
+            <table>
+              <thead><tr><th>Name</th><th>Group</th><th>Country</th></tr></thead>
+              <tbody><tr><td class="name-cell"><span class="student">青木　愛</span><span class="kana small">アオキ　アイ</span></td><td><span class="group-pill">G</span></td><td>Morocco</td></tr><tr><td class="name-cell"><span class="student">青山　爽太</span><span class="kana small">アオヤマ　ソウタ</span></td><td><span class="group-pill">J</span></td><td>Portugal</td></tr><tr><td class="name-cell"><span class="student">秋山　樹</span><span class="kana small">アキヤマ　タツキ</span></td><td><span class="group-pill">O</span></td><td>Egypt</td></tr><tr><td class="name-cell"><span class="student">浅田　寛弥</span><span class="kana small">アサダ　ヒロヤ</span></td><td><span class="group-pill">F</span></td><td>Mexico</td></tr><tr><td class="name-cell"><span class="student">浅野　開琉</span><span class="kana small">アサノ　カイル</span></td><td><span class="group-pill">J</span></td><td>Portugal</td></tr><tr><td class="name-cell"><span class="student">阿部　至恩</span><span class="kana small">アベ　シオン</span></td><td><span class="group-pill">H</span></td><td>USA</td></tr><tr><td class="name-cell"><span class="student">荒木田　弘明</span><span class="kana small">アラキダ　ヒロアキ</span></td><td><span class="group-pill">D</span></td><td>Germany</td></tr><tr><td class="name-cell"><span class="student">有賀　勇斗</span><span class="kana small">アリガ　ユウト</span></td><td><span class="group-pill">M</span></td><td>South Korea</td></tr><tr><td class="name-cell"><span class="student">粟野　翔</span><span class="kana small">アワノ　カケル</span></td><td><span class="group-pill">N</span></td><td>Saudi Arabia</td></tr><tr><td class="name-cell"><span class="student">石橋　和也</span><span class="kana small">イシバシ　カズヤ</span></td><td><span class="group-pill">H</span></td><td>USA</td></tr><tr><td class="name-cell"><span class="student">石引　響</span><span class="kana small">イシビキ　ヒビキ</span></td><td><span class="group-pill">C</span></td><td>Japan</td></tr><tr><td class="name-cell"><span class="student">一松　陽翔</span><span class="kana small">イチマツ　アキト</span></td><td><span class="group-pill">F</span></td><td>Mexico</td></tr><tr><td class="name-cell"><span class="student">伊藤　海生</span><span class="kana small">イトウ　カイイ</span></td><td><span class="group-pill">D</span></td><td>Germany</td></tr><tr><td class="name-cell"><span class="student">伊藤　拓哉</span><span class="kana small">イトウ　タクヤ</span></td><td><span class="group-pill">D</span></td><td>Germany</td></tr><tr><td class="name-cell"><span class="student">宇田　一博</span><span class="kana small">ウダ　カズヒロ</span></td><td><span class="group-pill">K</span></td><td>Colombia</td></tr><tr><td class="name-cell"><span class="student">江口　歩真</span><span class="kana small">エグチ　アユマ</span></td><td><span class="group-pill">M</span></td><td>South Korea</td></tr><tr><td class="name-cell"><span class="student">大澤　祥太郎</span><span class="kana small">オオサワ　ショウタロウ</span></td><td><span class="group-pill">N</span></td><td>Saudi Arabia</td></tr><tr><td class="name-cell"><span class="student">太田　和毅</span><span class="kana small">オオタ　カズキ</span></td><td><span class="group-pill">C</span></td><td>Japan</td></tr><tr><td class="name-cell"><span class="student">太田　晃生</span><span class="kana small">オオタ　コウキ</span></td><td><span class="group-pill">H</span></td><td>USA</td></tr><tr><td class="name-cell"><span class="student">大塚　一樹</span><span class="kana small">オオツカ　カズキ</span></td><td><span class="group-pill">C</span></td><td>Japan</td></tr><tr><td class="name-cell"><span class="student">大平　蓮也</span><span class="kana small">オオヒラ　レンヤ</span></td><td><span class="group-pill">L</span></td><td>Uruguay</td></tr><tr><td class="name-cell"><span class="student">岡﨑　大智</span><span class="kana small">オカザキ　ダイチ</span></td><td><span class="group-pill">B</span></td><td>France</td></tr><tr><td class="name-cell"><span class="student">小川　史温</span><span class="kana small">オガワ　シオン</span></td><td><span class="group-pill">B</span></td><td>France</td></tr><tr><td class="name-cell"><span class="student">鬼塚　駿</span><span class="kana small">オニツカ　シュン</span></td><td><span class="group-pill">M</span></td><td>South Korea</td></tr><tr><td class="name-cell"><span class="student">柿木　奏太</span><span class="kana small">カキノキ　ソウタ</span></td><td><span class="group-pill">N</span></td><td>Saudi Arabia</td></tr><tr><td class="name-cell"><span class="student">川田原　瑠那</span><span class="kana small">カワタハラ　ルナ</span></td><td><span class="group-pill">K</span></td><td>Colombia</td></tr><tr><td class="name-cell"><span class="student">神戸　宗一郎</span><span class="kana small">カンベ　ソウイチロウ</span></td><td><span class="group-pill">I</span></td><td>Argentina</td></tr><tr><td class="name-cell"><span class="student">我如古　隼人</span><span class="kana small">ガネコ　ハヤト</span></td><td><span class="group-pill">J</span></td><td>Portugal</td></tr><tr><td class="name-cell"><span class="student">木内　明輝</span><span class="kana small">キウチ　メイキ</span></td><td><span class="group-pill">G</span></td><td>Morocco</td></tr><tr><td class="name-cell"><span class="student">岸波　壮智</span><span class="kana small">キシナミ　マサアキ</span></td><td><span class="group-pill">O</span></td><td>Egypt</td></tr><tr><td class="name-cell"><span class="student">木村　治仁</span><span class="kana small">キムラ　ハルト</span></td><td><span class="group-pill">B</span></td><td>France</td></tr><tr><td class="name-cell"><span class="student">草野　陽太</span><span class="kana small">クサノ　ヒナタ</span></td><td><span class="group-pill">C</span></td><td>Japan</td></tr><tr><td class="name-cell"><span class="student">國井　徠希</span><span class="kana small">クニイ　ライキ</span></td><td><span class="group-pill">F</span></td><td>Mexico</td></tr><tr><td class="name-cell"><span class="student">栗田　唯世</span><span class="kana small">クリタ　ユイセ</span></td><td><span class="group-pill">N</span></td><td>Saudi Arabia</td></tr><tr><td class="name-cell"><span class="student">桑久保　陽平</span><span class="kana small">クワクボ　ヨウヘイ</span></td><td><span class="group-pill">L</span></td><td>Uruguay</td></tr><tr><td class="name-cell"><span class="student">桑原　遼羽</span><span class="kana small">クワハラ　リョーウ</span></td><td><span class="group-pill">E</span></td><td>Spain</td></tr><tr><td class="name-cell"><span class="student">グエン　トアンキエト</span><span class="kana small">グエン　トアンキエト</span></td><td><span class="group-pill">N</span></td><td>Saudi Arabia</td></tr><tr><td class="name-cell"><span class="student">小平　侍友太</span><span class="kana small">コダイラ　シュウタ</span></td><td><span class="group-pill">J</span></td><td>Portugal</td></tr><tr><td class="name-cell"><span class="student">駒倉　康碩</span><span class="kana small">コマクラ　ヤスヒロ</span></td><td><span class="group-pill">I</span></td><td>Argentina</td></tr><tr><td class="name-cell"><span class="student">小山　祐輝</span><span class="kana small">コヤマ　ユウキ</span></td><td><span class="group-pill">G</span></td><td>Morocco</td></tr><tr><td class="name-cell"><span class="student">坂本　快</span><span class="kana small">サカモト　カイ</span></td><td><span class="group-pill">C</span></td><td>Japan</td></tr><tr><td class="name-cell"><span class="student">佐藤　空</span><span class="kana small">サトウ　ソラ</span></td><td><span class="group-pill">J</span></td><td>Portugal</td></tr><tr><td class="name-cell"><span class="student">佐藤　陸</span><span class="kana small">サトウ　リク</span></td><td><span class="group-pill">G</span></td><td>Morocco</td></tr><tr><td class="name-cell"><span class="student">佐藤　凌</span><span class="kana small">サトウ　リョウ</span></td><td><span class="group-pill">G</span></td><td>Morocco</td></tr><tr><td class="name-cell"><span class="student">椎名　陽悠</span><span class="kana small">シイナ　ヒユウ</span></td><td><span class="group-pill">O</span></td><td>Egypt</td></tr><tr><td class="name-cell"><span class="student">塩谷　翼</span><span class="kana small">シオヤ　ツバサ</span></td><td><span class="group-pill">D</span></td><td>Germany</td></tr><tr><td class="name-cell"><span class="student">柴田　尚槻</span><span class="kana small">シバタ　ナオキ</span></td><td><span class="group-pill">C</span></td><td>Japan</td></tr><tr><td class="name-cell"><span class="student">島田　晟</span><span class="kana small">シマダ　ジョウ</span></td><td><span class="group-pill">M</span></td><td>South Korea</td></tr><tr><td class="name-cell"><span class="student">白井　智也</span><span class="kana small">シライ　トモヤ</span></td><td><span class="group-pill">B</span></td><td>France</td></tr><tr><td class="name-cell"><span class="student">新城　裕涼</span><span class="kana small">シンジョウ　ユウスケ</span></td><td><span class="group-pill">I</span></td><td>Argentina</td></tr></tbody>
+            </table>
+            </div>
+            <div class="student-table-panel">
+            <table>
+              <thead><tr><th>Name</th><th>Group</th><th>Country</th></tr></thead>
+              <tbody><tr><td class="name-cell"><span class="student">ジャヤシンハアーラチラゲクラトンガ　ビナーディペハンサ</span><span class="kana small">ジャヤシンハアーラチラゲクラトンガ ビナーディペハンサ</span></td><td><span class="group-pill">K</span></td><td>Colombia</td></tr><tr><td class="name-cell"><span class="student">鈴木　航成</span><span class="kana small">スズキ　コウセイ</span></td><td><span class="group-pill">B</span></td><td>France</td></tr><tr><td class="name-cell"><span class="student">鈴木　咲澄</span><span class="kana small">スズキ　サクト</span></td><td><span class="group-pill">L</span></td><td>Uruguay</td></tr><tr><td class="name-cell"><span class="student">鈴木　優</span><span class="kana small">スズキ　ユウ</span></td><td><span class="group-pill">H</span></td><td>USA</td></tr><tr><td class="name-cell"><span class="student">鈴木　陽太</span><span class="kana small">スズキ　ヨウタ</span></td><td><span class="group-pill">B</span></td><td>France</td></tr><tr><td class="name-cell"><span class="student">須藤　蒼太</span><span class="kana small">ストウ　ソウタ</span></td><td><span class="group-pill">H</span></td><td>USA</td></tr><tr><td class="name-cell"><span class="student">須原　大貴</span><span class="kana small">スハラ　タイキ</span></td><td><span class="group-pill">A</span></td><td>Brazil</td></tr><tr><td class="name-cell"><span class="student">高橋　拓真</span><span class="kana small">タカハシ　タクマ</span></td><td><span class="group-pill">C</span></td><td>Japan</td></tr><tr><td class="name-cell"><span class="student">髙橋　琉之介</span><span class="kana small">タカハシ　リュウノスケ</span></td><td><span class="group-pill">I</span></td><td>Argentina</td></tr><tr><td class="name-cell"><span class="student">竹田　圭冴</span><span class="kana small">タケタ　ケイゴ</span></td><td><span class="group-pill">L</span></td><td>Uruguay</td></tr><tr><td class="name-cell"><span class="student">田柳　光将</span><span class="kana small">タヤナギ　ミショウ</span></td><td><span class="group-pill">H</span></td><td>USA</td></tr><tr><td class="name-cell"><span class="student">伊達　友哉</span><span class="kana small">ダテ　ユウヤ</span></td><td><span class="group-pill">M</span></td><td>South Korea</td></tr><tr><td class="name-cell"><span class="student">登倉　慧</span><span class="kana small">トグラ　ケイ</span></td><td><span class="group-pill">M</span></td><td>South Korea</td></tr><tr><td class="name-cell"><span class="student">仲町　友里</span><span class="kana small">ナカマチ　ユリ</span></td><td><span class="group-pill">F</span></td><td>Mexico</td></tr><tr><td class="name-cell"><span class="student">永田　真帆</span><span class="kana small">ナガタ　マホ</span></td><td><span class="group-pill">N</span></td><td>Saudi Arabia</td></tr><tr><td class="name-cell"><span class="student">根本　隼</span><span class="kana small">ネモト　シュン</span></td><td><span class="group-pill">G</span></td><td>Morocco</td></tr><tr><td class="name-cell"><span class="student">野村　隆介</span><span class="kana small">ノムラ　リュウスケ</span></td><td><span class="group-pill">A</span></td><td>Brazil</td></tr><tr><td class="name-cell"><span class="student">春田　翔</span><span class="kana small">ハルタ　ショウ</span></td><td><span class="group-pill">O</span></td><td>Egypt</td></tr><tr><td class="name-cell"><span class="student">韓　知勲</span><span class="kana small">ハン　ジフン</span></td><td><span class="group-pill">A</span></td><td>Brazil</td></tr><tr><td class="name-cell"><span class="student">檜山　陸斗</span><span class="kana small">ヒヤマ　リツ</span></td><td><span class="group-pill">D</span></td><td>Germany</td></tr><tr><td class="name-cell"><span class="student">平野　大翔</span><span class="kana small">ヒラノ　ヤマト</span></td><td><span class="group-pill">I</span></td><td>Argentina</td></tr><tr><td class="name-cell"><span class="student">藤枝　駿斗</span><span class="kana small">フジエダ　シュント</span></td><td><span class="group-pill">O</span></td><td>Egypt</td></tr><tr><td class="name-cell"><span class="student">藤倉　いずみ</span><span class="kana small">フジクラ　イズミ</span></td><td><span class="group-pill">I</span></td><td>Argentina</td></tr><tr><td class="name-cell"><span class="student">藤永　優多</span><span class="kana small">フジナガ　ウタ</span></td><td><span class="group-pill">K</span></td><td>Colombia</td></tr><tr><td class="name-cell"><span class="student">堀井　隼人</span><span class="kana small">ホリイ　ハヤト</span></td><td><span class="group-pill">J</span></td><td>Portugal</td></tr><tr><td class="name-cell"><span class="student">幕内　龍海</span><span class="kana small">マクウチ　タツミ</span></td><td><span class="group-pill">F</span></td><td>Mexico</td></tr><tr><td class="name-cell"><span class="student">増田　優希</span><span class="kana small">マスダ　ユウキ</span></td><td><span class="group-pill">A</span></td><td>Brazil</td></tr><tr><td class="name-cell"><span class="student">松﨑　唯華</span><span class="kana small">マツザキ　ユイカ</span></td><td><span class="group-pill">E</span></td><td>Spain</td></tr><tr><td class="name-cell"><span class="student">松戸　輝</span><span class="kana small">マツド　ヒカル</span></td><td><span class="group-pill">B</span></td><td>France</td></tr><tr><td class="name-cell"><span class="student">松村　輝</span><span class="kana small">マツムラ　ヒカル</span></td><td><span class="group-pill">I</span></td><td>Argentina</td></tr><tr><td class="name-cell"><span class="student">三浦　礼央</span><span class="kana small">ミウラ　レオ</span></td><td><span class="group-pill">A</span></td><td>Brazil</td></tr><tr><td class="name-cell"><span class="student">水谷　優希</span><span class="kana small">ミズタニ　ユウキ</span></td><td><span class="group-pill">G</span></td><td>Morocco</td></tr><tr><td class="name-cell"><span class="student">宮武　蒼惟</span><span class="kana small">ミヤタケ　アオイ</span></td><td><span class="group-pill">D</span></td><td>Germany</td></tr><tr><td class="name-cell"><span class="student">宮本　琉生</span><span class="kana small">ミヤモト　ルイ</span></td><td><span class="group-pill">L</span></td><td>Uruguay</td></tr><tr><td class="name-cell"><span class="student">茂木　優和</span><span class="kana small">モギ　ユウワ</span></td><td><span class="group-pill">D</span></td><td>Germany</td></tr><tr><td class="name-cell"><span class="student">桃井　優</span><span class="kana small">モモイ　ユウ</span></td><td><span class="group-pill">F</span></td><td>Mexico</td></tr><tr><td class="name-cell"><span class="student">森本　颯太</span><span class="kana small">モリモト　ソウタ</span></td><td><span class="group-pill">A</span></td><td>Brazil</td></tr><tr><td class="name-cell"><span class="student">ＭＯＮＴＥＬＬＡ　ＥＤＷＩＮ</span><span class="kana small">モンテッラ　エドウィン</span></td><td><span class="group-pill">K</span></td><td>Colombia</td></tr><tr><td class="name-cell"><span class="student">八重樫　旺樹</span><span class="kana small">ヤエガシ　ヒロキ</span></td><td><span class="group-pill">H</span></td><td>USA</td></tr><tr><td class="name-cell"><span class="student">矢口　瑛士</span><span class="kana small">ヤグチ　エイジ</span></td><td><span class="group-pill">O</span></td><td>Egypt</td></tr><tr><td class="name-cell"><span class="student">山口　颯太</span><span class="kana small">ヤマグチ　ソウタ</span></td><td><span class="group-pill">E</span></td><td>Spain</td></tr><tr><td class="name-cell"><span class="student">山崎　来斗</span><span class="kana small">ヤマサキ　ライト</span></td><td><span class="group-pill">E</span></td><td>Spain</td></tr><tr><td class="name-cell"><span class="student">山﨑　大肇</span><span class="kana small">ヤマザキ　マサトシ</span></td><td><span class="group-pill">E</span></td><td>Spain</td></tr><tr><td class="name-cell"><span class="student">山本　剛大</span><span class="kana small">ヤマモト　タカヒロ</span></td><td><span class="group-pill">K</span></td><td>Colombia</td></tr><tr><td class="name-cell"><span class="student">横倉　蒼空</span><span class="kana small">ヨコクラ　ソラ</span></td><td><span class="group-pill">F</span></td><td>Mexico</td></tr><tr><td class="name-cell"><span class="student">吉田　爽二</span><span class="kana small">ヨシダ　ソウジ</span></td><td><span class="group-pill">E</span></td><td>Spain</td></tr><tr><td class="name-cell"><span class="student">米山　拓実</span><span class="kana small">ヨネヤマ　タクミ</span></td><td><span class="group-pill">L</span></td><td>Uruguay</td></tr><tr><td class="name-cell"><span class="student">若槻　颯太</span><span class="kana small">ワカツキ　ソウタ</span></td><td><span class="group-pill">A</span></td><td>Brazil</td></tr><tr><td class="name-cell"><span class="student">渡邉　奏士</span><span class="kana small">ワタナベ　カナト</span></td><td><span class="group-pill">J</span></td><td>Portugal</td></tr></tbody>
+            </table>
+            </div>
+          </div>
+        </section>
+      </main>
+      <aside class="sidebar">
+        <div class="arena-title">iArena</div>
+        <div class="sidebar-card">
+          <div class="arena-shell" aria-label="iArena map">
+            <button class="arena-fullscreen" type="button" aria-label="Toggle fullscreen for iArena" title="Fullscreen">
+              <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter">
+                <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>
+              </svg>
+            </button>
+            <div class="arena-label arena-screen">Screen</div>
+            <div class="arena-label arena-entrance">Entrance</div>
+            <div class="arena-arrow north" aria-hidden="true"></div>
+            <div class="arena-arrow south" aria-hidden="true"></div>
+            <div class="arena-grid">
+              <div class="arena-stage"><span>Screen</span><span class="stage-line" aria-hidden="true"></span><span>Stage</span></div>
+              
+      <div class="arena-marker" style="grid-column:1; grid-row:1; --accent:#0b7a3b;">
+        <span class="letter">A</span>
+        <span><span class="country">Brazil</span><span class="note">Group A</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>森本　颯太</li><li>若槻　颯太</li><li>増田　優希</li><li>須原　大貴</li><li>三浦　礼央</li><li>韓　知勲</li><li>野村　隆介</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:4; grid-row:1; --accent:#1b4fa3;">
+        <span class="letter">B</span>
+        <span><span class="country">France</span><span class="note">Group B</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>鈴木　陽太</li><li>小川　史温</li><li>松戸　輝</li><li>木村　治仁</li><li>鈴木　航成</li><li>白井　智也</li><li>岡﨑　大智</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:1; grid-row:2; --accent:#bc002d;">
+        <span class="letter">C</span>
+        <span><span class="country">Japan</span><span class="note">Group C</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>坂本　快</li><li>太田　和毅</li><li>柴田　尚槻</li><li>石引　響</li><li>草野　陽太</li><li>大塚　一樹</li><li>高橋　拓真</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:2; grid-row:2; --accent:#111111;">
+        <span class="letter">D</span>
+        <span><span class="country">Germany</span><span class="note">Group D</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>荒木田　弘明</li><li>伊藤　拓哉</li><li>宮武　蒼惟</li><li>塩谷　翼</li><li>伊藤　海生</li><li>茂木　優和</li><li>檜山　陸斗</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:3; grid-row:2; --accent:#aa151b;">
+        <span class="letter">E</span>
+        <span><span class="country">Spain</span><span class="note">Group E</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>松﨑　唯華</li><li>山崎　来斗</li><li>吉田　爽二</li><li>山口　颯太</li><li>山﨑　大肇</li><li>桑原　遼羽</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:4; grid-row:2; --accent:#006847;">
+        <span class="letter">F</span>
+        <span><span class="country">Mexico</span><span class="note">Group F</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>仲町　友里</li><li>一松　陽翔</li><li>幕内　龍海</li><li>横倉　蒼空</li><li>桃井　優</li><li>浅田　寛弥</li><li>國井　徠希</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:1; grid-row:3; --accent:#c1272d;">
+        <span class="letter">G</span>
+        <span><span class="country">Morocco</span><span class="note">Group G</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>小山　祐輝</li><li>根本　隼</li><li>佐藤　陸</li><li>佐藤　凌</li><li>青木　愛</li><li>水谷　優希</li><li>木内　明輝</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:2; grid-row:3; --accent:#0a3161;">
+        <span class="letter">H</span>
+        <span><span class="country">USA</span><span class="note">Group H</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>鈴木　優</li><li>須藤　蒼太</li><li>石橋　和也</li><li>太田　晃生</li><li>八重樫　旺樹</li><li>阿部　至恩</li><li>田柳　光将</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:3; grid-row:3; --accent:#74acdf;">
+        <span class="letter">I</span>
+        <span><span class="country">Argentina</span><span class="note">Group I</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>藤倉　いずみ</li><li>平野　大翔</li><li>松村　輝</li><li>神戸　宗一郎</li><li>新城　裕涼</li><li>髙橋　琉之介</li><li>駒倉　康碩</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:4; grid-row:3; --accent:#006600;">
+        <span class="letter">J</span>
+        <span><span class="country">Portugal</span><span class="note">Group J</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>渡邉　奏士</li><li>我如古　隼人</li><li>青山　爽太</li><li>浅野　開琉</li><li>小平　侍友太</li><li>佐藤　空</li><li>堀井　隼人</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:1; grid-row:4; --accent:#f7d117;">
+        <span class="letter">K</span>
+        <span><span class="country">Colombia</span><span class="note">Group K</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>川田原　瑠那</li><li>山本　剛大</li><li>ジャヤシンハアーラチラゲクラトンガ　ビナーディペハンサ</li><li>藤永　優多</li><li>ＭＯＮＴＥＬＬＡ　ＥＤＷＩＮ</li><li>宇田　一博</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:2; grid-row:4; --accent:#00a3e0;">
+        <span class="letter">L</span>
+        <span><span class="country">Uruguay</span><span class="note">Group L</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>竹田　圭冴</li><li>大平　蓮也</li><li>鈴木　咲澄</li><li>桑久保　陽平</li><li>米山　拓実</li><li>宮本　琉生</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:3; grid-row:4; --accent:#003478;">
+        <span class="letter">M</span>
+        <span><span class="country">South Korea</span><span class="note">Group M</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>島田　晟</li><li>鬼塚　駿</li><li>江口　歩真</li><li>伊達　友哉</li><li>有賀　勇斗</li><li>登倉　慧</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:4; grid-row:4; --accent:#006c35;">
+        <span class="letter">N</span>
+        <span><span class="country">Saudi Arabia</span><span class="note">Group N</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>永田　真帆</li><li>グエン　トアンキエト</li><li>大澤　祥太郎</li><li>柿木　奏太</li><li>粟野　翔</li><li>栗田　唯世</li></ul></div>
+      </div>
+    
+      <div class="arena-marker" style="grid-column:2 / span 2; grid-row:5; --accent:#ce1126;">
+        <span class="letter">O</span>
+        <span><span class="country">Egypt</span><span class="note">Group O</span></span>
+        <div class="arena-tooltip"><span class="tooltip-title">Students</span><ul><li>椎名　陽悠</li><li>秋山　樹</li><li>岸波　壮智</li><li>春田　翔</li><li>矢口　瑛士</li><li>藤枝　駿斗</li></ul></div>
+      </div>
+    
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <script>
+    const groupAccents = {
+      A: '#0b7a3b',
+      B: '#1b4fa3',
+      C: '#bc002d',
+      D: '#111111',
+      E: '#aa151b',
+      F: '#006847',
+      G: '#c1272d',
+      H: '#0a3161',
+      I: '#74acdf',
+      J: '#006600',
+      K: '#f7d117',
+      L: '#00a3e0',
+      M: '#003478',
+      N: '#006c35',
+      O: '#ce1126',
+    };
+
+    document.querySelectorAll('.group-pill').forEach((pill) => {
+      const letter = pill.textContent.trim();
+      const accent = groupAccents[letter];
+      if (accent) pill.style.setProperty('--accent', accent);
+    });
+
+    document.querySelectorAll('.tooltip-title').forEach((title) => title.remove());
+
+    const arenaShell = document.querySelector('.arena-shell');
+    const fullscreenButton = document.querySelector('.arena-fullscreen');
+    if (arenaShell && fullscreenButton) {
+      fullscreenButton.addEventListener('click', async () => {
+        try {
+          if (document.fullscreenElement) {
+            await document.exitFullscreen();
+          } else {
+            await arenaShell.requestFullscreen();
+          }
+        } catch (error) {
+          console.warn('Fullscreen toggle failed', error);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
